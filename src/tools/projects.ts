@@ -100,7 +100,7 @@ Use when: "Tell me more about project 12345678", "Get the details for this proje
         const result = await apiGet<{ projects: Record<string, FreelancerProject> }>(
           "/projects/0.1/projects",
           {
-            "ids[]": project_id,
+            "projects[]": project_id,
             full_description: true,
             job_details: true,
             upgrade_details: true,
@@ -188,10 +188,15 @@ Use when: "Show my active projects", "List projects I'm working on", "What proje
   );
 }
 
+function formatBudget(p: FreelancerProject): string {
+  if (!p.budget) return "Budget TBD";
+  const code = p.currency?.code ?? p.budget.currency_code ?? "";
+  const sign = p.currency?.sign ?? "";
+  return `${sign}${p.budget.minimum ?? "?"}–${sign}${p.budget.maximum ?? "?"}${code ? " " + code : ""}`;
+}
+
 function formatProjectSummary(p: FreelancerProject, index: number): string {
-  const budget = p.budget
-    ? `$${p.budget.minimum ?? "?"}–$${p.budget.maximum ?? "?"} ${p.budget.currency_code ?? "USD"}`
-    : "Budget TBD";
+  const budget = formatBudget(p);
   const skills = p.jobs?.map((j) => j.name).join(", ") || "";
   return [
     `**${index}. [${p.id}] ${p.title}**`,
@@ -206,9 +211,7 @@ function formatProjectSummary(p: FreelancerProject, index: number): string {
 }
 
 function formatProjectFull(p: FreelancerProject): string {
-  const budget = p.budget
-    ? `$${p.budget.minimum ?? "?"}–$${p.budget.maximum ?? "?"} ${p.budget.currency_code ?? "USD"}`
-    : "Budget TBD";
+  const budget = formatBudget(p);
   const skills = p.jobs?.map((j) => j.name).join(", ") || "none";
   return [
     `## [${p.id}] ${p.title}`,
