@@ -188,6 +188,13 @@ Use when: "Show my active projects", "List projects I'm working on", "What proje
   );
 }
 
+function projectUrl(p: FreelancerProject): string | null {
+  // Freelancer's seo_url category slug doesn't reliably match the project's
+  // title/skills, so it must never be hand-constructed — only the API's own
+  // value is a valid link.
+  return p.seo_url ? `https://www.freelancer.com/projects/${p.seo_url}` : null;
+}
+
 function formatBudget(p: FreelancerProject): string {
   if (!p.budget) return "Budget TBD";
   const code = p.currency?.code ?? p.budget.currency_code ?? "";
@@ -204,6 +211,7 @@ function formatProjectSummary(p: FreelancerProject, index: number): string {
     `   Bids: ${p.bid_stats?.bid_count ?? 0} (avg $${p.bid_stats?.bid_avg?.toFixed(0) ?? "?"})`,
     skills ? `   Skills: ${skills}` : "",
     `   Posted: ${formatDate(p.time_submitted)}`,
+    projectUrl(p) ? `   URL: ${projectUrl(p)}` : "",
     "",
   ]
     .filter((l) => l !== null)
@@ -220,6 +228,7 @@ function formatProjectFull(p: FreelancerProject): string {
     `**Posted:** ${formatDate(p.time_submitted)} | **Updated:** ${formatDate(p.time_updated)}`,
     `**Bids:** ${p.bid_stats?.bid_count ?? 0} (avg $${p.bid_stats?.bid_avg?.toFixed(0) ?? "?"})`,
     `**Skills:** ${skills}`,
+    projectUrl(p) ? `**URL:** ${projectUrl(p)}` : "",
     "",
     "### Description",
     p.description || "No description provided.",
